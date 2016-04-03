@@ -1,8 +1,12 @@
 #include "general.h"
 
 volatile WORD Timer;		/* 100Hz increment timer */
+
+/* Used to get old filename and create new to avoid overwriting.*/
 uint8_t ee_file_val EEMEM;
 
+
+//	Implementation redundant. Used to add properties for new file.
 DWORD get_fattime () {
 	RTC rtc;
 
