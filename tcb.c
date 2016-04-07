@@ -2,6 +2,9 @@
 #include "tcb.h"
 
 uint16_t asynch_presc;
+volatile task_list_t norm_task_list;
+volatile asynch_task_list_t asynch_task_list;
+
 
 void add_task(void(*e)(void)) {
 	task_t * task_new = norm_task_constr(e);

@@ -74,6 +74,7 @@ int main(void)
 		if(norm_task_list.first) {
 			norm_task_list.first->exec();
 			delete_task(norm_task_list.first);
+			LED_TOG;
 		} else {
 			//	Turn on sleep mode. It can be possible if there will be Usart RX software handling. TODO!
 		}

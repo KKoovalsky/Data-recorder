@@ -54,7 +54,10 @@ void USART_init() {
 ISR(USART0_UDRE_vect) {
 	static const char * str = GN_TID_comm;
 	char data;
-	if((data = pgm_read_byte(str++))) UDR0 = data;
+	if(str) {
+		 data = pgm_read_byte(str++);
+		 UDR0 = data;
+	}
 	else UCSR0B &= ~(1<<UDRIE0);
 }
 
@@ -63,15 +66,11 @@ ISR(USART0_RX_vect) {
 	char data;
 	data = UDR0;
 
-	PORTD ^= (1<<PD6);
-
 	if(data_ind == 5) {
 		TCNT1 = 0;
 
 		data_ind = 0;
 		GGA_located = false;
-
-		PORTD &= ~(1<<PD6);
 
 		add_task(t_add_file_endline);
 

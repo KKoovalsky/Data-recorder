@@ -101,10 +101,11 @@ void Timer1_init (void) {
 	/* 	Prescaler F_CPU/1024; CTC mode	*/
 	TCCR1B |= (1<<WGM12) | (1<<CS12) | (1<<CS10);
 
-	/*  1BBE(16) = 7102(10)
-		8000000/1024/7102 = 1,1 Hz */
-	OCR1AH = 0x1B;
-	OCR1AL = 0xBE;
+	/*  21E9(16) = 8681(10)
+		8000000/1024/7102 = 0,9 Hz 
+		Interrupt after ~1,11s*/
+	OCR1AH = 0x21;
+	OCR1AL = 0xE9;
 }
 
 void SPI_init() {

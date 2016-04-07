@@ -51,8 +51,8 @@ typedef struct a_task_list {
 }asynch_task_list_t;
 
 //	Global task lists
-task_list_t norm_task_list;
-asynch_task_list_t asynch_task_list;
+extern volatile task_list_t norm_task_list;
+extern volatile asynch_task_list_t asynch_task_list;
 
 //	Timer - for asynchronous operation - prescaler
 extern uint16_t asynch_presc;

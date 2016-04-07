@@ -39,6 +39,8 @@
 #define MOSI PB5
 #define CS PB4
 
+#define LED_TOG (PORTD ^= (1<<PD6))
+
 typedef enum data_meas {
 	altitude, temperature, humidity, pressure
 } data_meas_t;
