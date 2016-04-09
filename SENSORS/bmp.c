@@ -103,10 +103,10 @@ void t_bmp_prep_data() {
 
 
 void t_bmp_take_meas() {
-	/*	A variable defined to have under control buggy measurment preparing,
+	/*	A variable defined to have under control buggy measurement preparing:
 	 	when measurement was deputed, but no results can be get from sensor. */
 	static uint16_t meas_not_rdy_cnt = 0;
-	//	Attempting to get data for 500 miliseconds.
+	//	Attempting to get data for 500 milliseconds.
 	if(meas_not_rdy_cnt == 500) {
 		//	Let GNSS module depute new measurement
 		meas_not_rdy_cnt = 0;
@@ -124,8 +124,8 @@ void t_bmp_take_meas() {
 }
 
 void t_bmp_save_data() {
-	SD_put_data_prog(PSTR("bmp_pres "));
-	SD_put_data(conv_meas_data(bmp_pres, pressure));
-	SD_put_data_prog(PSTR("bmp_temp "));
-	SD_put_data(conv_meas_data(bmp_temp, temperature));
+	SD_put_data_prog(PSTR("bmp_pres "), false);
+	SD_put_data(conv_meas_data(bmp_pres, pressure), false);
+	SD_put_data_prog(PSTR("bmp_temp "), false);
+	SD_put_data(conv_meas_data(bmp_temp, temperature), true);
 }

@@ -113,8 +113,8 @@ void t_hts_take_meas() {
 }
 
 void t_hts_save_data() {
-	SD_put_data_prog(PSTR("hts_hum"));
-	SD_put_data(conv_meas_data(hts_hum, humidity));
-	SD_put_data_prog(PSTR("hts_temp "));
-	SD_put_data(conv_meas_data(hts_temp, temperature));
+	SD_put_data_prog(PSTR("hts_hum "), false);
+	SD_put_data(conv_meas_data(hts_hum, humidity), false);
+	SD_put_data_prog(PSTR("hts_temp "), false);
+	SD_put_data(conv_meas_data(hts_temp, temperature), true);
 }

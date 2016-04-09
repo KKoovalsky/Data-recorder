@@ -54,7 +54,7 @@ int main(void)
 	//	Change Talker ID of GNSS module from GP to GN (multiple system servicing)
 	set_GN_TID();
 
-	//	Run the watchtimer to depute measurement if the GNSS data won't be earned in two seconds
+	//	Run the watchtimer to depute measurement if the GNSS data aren't earned
 	TIMSK1 |= (1<<OCIE1A);
 
 	//	Wait until sensors end a conversion
@@ -74,7 +74,6 @@ int main(void)
 		if(norm_task_list.first) {
 			norm_task_list.first->exec();
 			delete_task(norm_task_list.first);
-			LED_TOG;
 		} else {
 			//	Turn on sleep mode. It can be possible if there will be Usart RX software handling. TODO!
 		}

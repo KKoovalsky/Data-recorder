@@ -177,7 +177,7 @@ void t_prep_gnss_data()
 
 void t_save_gnss_data() {
 	for(uint8_t i = 0; i < 5; i ++)
-		SD_put_data((char*)rdy_data[i]);
+		SD_put_data((char*)rdy_data[i], (i == 5 ? true : false));
 }
 
 

@@ -54,10 +54,10 @@ bool mpl_take_p_t_meas() {
 }
 
 void t_mpl_take_p_t_meas() {
-	/*	A variable defined to have under control buggy measurement preparing,
+	/*	A variable defined to have under control buggy measurement preparing:
 	 	when measurement was deputed, but no results can be get from sensor. */
 	static uint16_t meas_not_rdy_cnt = 0;
-	//	Attempting to get data for 500 miliseconds.
+	//	Attempting to get data for 500 milliseconds.
 	if(meas_not_rdy_cnt == 500) {
 		//	Let GNSS module depute new measurement
 		meas_not_rdy_cnt = 0;
@@ -75,10 +75,10 @@ void t_mpl_take_p_t_meas() {
 }
 
 void t_mpl_take_alt_meas() {
-	/*	A variable defined to have under control buggy measurment preparing,
+	/*	A variable defined to have under control buggy measurement preparing:
 	 	when measurement was deputed, but no results can be get from sensor. */
 	static uint16_t meas_not_rdy_cnt = 0;
-	//	Attempting to get data for 500 miliseconds.
+	//	Attempting to get data for 500 milliseconds.
 	if(meas_not_rdy_cnt == 500) {
 		//	Let GNSS module depute new measurement
 		meas_not_rdy_cnt = 0;
@@ -87,6 +87,7 @@ void t_mpl_take_alt_meas() {
 	if(!mpl_take_alt_meas()) {
 		add_asynch_task(t_mpl_take_alt_meas, 10, false);
 		meas_not_rdy_cnt += 10;
+		
 	} else {
 		meas_not_rdy_cnt = 0;
 		add_task(t_mpl_dep_p_t_meas);
@@ -136,13 +137,13 @@ void t_mpl_prep_p_t_data() {
 }
 
 void t_mpl_save_p_t_data() {
-	SD_put_data_prog(PSTR("mpl_pres "));
-	SD_put_data(conv_meas_data(mpl_pres, pressure));
-	SD_put_data_prog(PSTR("mpl_temp "));
-	SD_put_data(conv_meas_data(mpl_temp, temperature));
+	SD_put_data_prog(PSTR("mpl_pres "), false);
+	SD_put_data(conv_meas_data(mpl_pres, pressure), false);
+	SD_put_data_prog(PSTR("mpl_temp "), false);
+	SD_put_data(conv_meas_data(mpl_temp, temperature), true);
 }
 
 void t_mpl_save_alt_data() {
-	SD_put_data_prog(PSTR("mpl_alt "));
-	SD_put_data(conv_meas_data(mpl_alt, altitude));
+	SD_put_data_prog(PSTR("mpl_alt "), false);
+	SD_put_data(conv_meas_data(mpl_alt, altitude), true);
 }

@@ -137,7 +137,41 @@ ISR(TIMER1_COMPA_vect) {
 	data_ind = 0;
 	GGA_located = false;		
 	commas_to_ignore = 0;
-
+	
+	LED_TOG;
+	
+	if(norm_task_list.first) {
+		task_t* task_p = norm_task_list.first;
+		char buffer[5];
+		uint16_t j = 0;
+		
+		while(task_p) {
+			task_p = task_p->next;
+			j++;
+		}
+		SD_put_data(utoa(j, buffer, 10), false);
+		
+		task_p = norm_task_list.first;
+		
+		void(*f_ptrs[])(void) = { t_add_file_endline, t_bmp_dep_meas, t_bmp_prep_data, t_bmp_save_data, t_bmp_take_meas,
+			t_hts_dep_meas, t_hts_prep_data, t_hts_save_data, t_hts_take_meas,
+				t_mpl_dep_alt_meas, t_mpl_prep_alt_data, t_mpl_save_alt_data, t_mpl_save_alt_data,
+					t_mpl_dep_alt_meas, t_mpl_prep_alt_data, t_mpl_save_alt_data, t_mpl_save_alt_data };
+		
+		while(task_p) {
+			for(uint8_t i = 0; f_ptrs[i]; i++) {
+				if(f_ptrs[i] == task_p->exec) {
+					itoa(i, buffer, 10);
+					x_strcat(buffer, " ");
+					SD_put_data(buffer, false);
+					break;
+				}
+			}
+			task_p = task_p->next;
+		}
+		SD_put_data_prog(PSTR("  "), true);
+	}
+	
 	add_task(t_add_file_endline);
 
 	add_task(t_bmp_take_meas);
@@ -146,5 +180,5 @@ ISR(TIMER1_COMPA_vect) {
 }
 
 void t_add_file_endline() {
-	SD_put_data_prog(PSTR("\n\r"));
+	SD_put_data_prog(PSTR("\n\r"), true);
 }

@@ -7,8 +7,8 @@
 #define OCRA_U OCR3A
 
 //	Interrupt on overflow enable/disable
-#define A_INT_EN (TIMSK3 |= (1<<TOIE3))
-#define A_INT_DIS (TIMSK3 &= ~(1<<TOIE3))
+#define A_INT_EN (TIMSK3 |= (1<<OCIE3A))
+#define A_INT_DIS (TIMSK3 &= ~(1<<OCIE3A))
 
 //	Clearing TCNT register
 #define A_TCNT_CLR	(TCNT3 = 0)
@@ -54,8 +54,8 @@ typedef struct a_task_list {
 extern volatile task_list_t norm_task_list;
 extern volatile asynch_task_list_t asynch_task_list;
 
-//	Timer - for asynchronous operation - prescaler
-extern uint16_t asynch_presc;
+//	Timer prescaler - for asynchronous operation 
+extern volatile uint16_t asynch_presc;
 
 //	Initialization of objects
 inline task_t* norm_task_constr(void(*e)(void)) {
@@ -78,7 +78,7 @@ void add_task(void(*e)(void));
 //	Task to delete should be indicated by argument
 void delete_task(task_t* task);
 
-//	Time to execute should be provided in miliseconds
+//	Time to execute should be provided in milliseconds
 void add_asynch_task(void(*e)(void), uint16_t time, bool importance);
 
 /*	The method will look different for different AVRs.

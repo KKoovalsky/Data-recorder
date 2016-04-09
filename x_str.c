@@ -19,7 +19,7 @@ uint8_t x_strlen(char * str) {
 
 uint8_t x_strlen_prog(const char * str) {
 	uint8_t size = 0;
-	while(pgm_read_byte(*str++))
+	while(pgm_read_byte(str++))
 		size++;
 	return size;
 }

@@ -1,7 +1,7 @@
 #include "general.h"
 #include "tcb.h"
 
-uint16_t asynch_presc;
+volatile uint16_t asynch_presc;
 volatile task_list_t norm_task_list;
 volatile asynch_task_list_t asynch_task_list;
 
@@ -15,7 +15,7 @@ void add_task(void(*e)(void)) {
 		task_new->next = task_new->prev = NULL;
 		return;
 	}
-	/* 	Adding new tasks on the end of tasklist, to firstly
+	/* 	Adding new tasks on the end of task list, to firstly
 	 *	execute tasks, which were added earlier				 		*/
 	norm_task_list.last->next = task_new;
 	task_new->prev = norm_task_list.last;
@@ -53,15 +53,13 @@ void delete_task(task_t* task) {
 
 void asynch_app_timer_init() {
 	TCCR3B |= (1<<WGM32);				//	CTC mode
-	TCCR3B |= (1<<CS32) | (1<<CS30);	//	Prescaler 1024. Timer tick frequency 7812,5 MHz
+	TCCR3B |= (1<<CS32) | (1<<CS30);	//	Prescaler 1024. Timer clock frequency 7812,5 MHz
 	asynch_presc = 1024;
 }
 
 void add_asynch_task(void(*e)(void), uint16_t time, bool importance) {
 
 	asynch_task_t* task_new = asynch_task_constr(e, time, importance);
-
-	uint16_t OCR_content;
 
 	//	Empty asynchronous task list
 	if(!asynch_task_list.first) {
@@ -78,7 +76,7 @@ void add_asynch_task(void(*e)(void), uint16_t time, bool importance) {
 		return;
 	}
 
-	uint16_t TCNT_content;
+	uint16_t TCNT_content, OCR_content;
 	uint32_t time_to_next_int;
 	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
 
@@ -125,7 +123,7 @@ void add_asynch_task(void(*e)(void), uint16_t time, bool importance) {
 		}
 
 		/*	If the new task should be executed as
-			last regarding only tasks existing on tasklist	*/
+			last regarding only tasks existing on task list	*/
 		task_new->time = task_new->time - sum_time;
 		asynch_task_list.last->next = task_new;
 		asynch_task_list.last = task_new;
@@ -147,9 +145,9 @@ void delete_asynch_task() {
 	free(task_temp);
 }
 
-//	Implementation assumming that interrupt can't be interrupted
+//	Implementation assuming that interrupt can't be interrupted
 ISR(TIMER3_COMPA_vect) {
-
+	
 	//	If it is important to execute a task function just after the given time:
 	if(asynch_task_list.first->important) {
 		asynch_task_list.first->exec();
@@ -158,7 +156,7 @@ ISR(TIMER3_COMPA_vect) {
 		add_task(asynch_task_list.first->exec);
 	}
 
-	//	Delete asynchronous task from the tasklist
+	//	Delete asynchronous task from the task list
 	delete_asynch_task();
 
 	//	Initialization of next interrupt on asynchronous task
@@ -175,7 +173,7 @@ ISR(TIMER3_COMPA_vect) {
 				add_task(asynch_task_list.first->exec);
 			}
 
-			//	Delete asynchronous task from the tasklist
+			//	Delete asynchronous task from the task list
 			delete_asynch_task();
 
 			if(!asynch_task_list.first) {
