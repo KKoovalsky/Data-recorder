@@ -31,6 +31,8 @@
 #include "SENSORS/mpl.h"
 #include "SENSORS/bmp.h"
 
+#define F_CPU 8000000UL
+
 #define ACK 1
 #define NACK 0
 
@@ -60,38 +62,20 @@ uint32_t f_bytes_wr;
 extern char filename[8];
 extern FIL fil_obj;
 
-volatile bool is_f_opened;
-
-inline void SD_put_data(char * str, bool close_f) {
-	if(!is_f_opened) {
-		f_open(&fil_obj, filename, FA_WRITE);
-		is_f_opened = true;
-	}
+inline void SD_put_data(char * str) {
 	f_lseek(&fil_obj, f_bytes_wr);
 	f_puts(str, &fil_obj);
 	f_bytes_wr += x_strlen(str);
-	if(close_f) {
-		f_close(&fil_obj);
-		is_f_opened = false;
-	}
 }
 
-inline void SD_put_data_prog(const char * str, bool close_f) {
+inline void SD_put_data_prog(const char * str) {
 	uint8_t len = x_strlen_prog(str);
 	char * temp_str = (char *) malloc (sizeof(char) * (len + 1));
 	x_sprinft_prog(temp_str, str);
 
-	if(!is_f_opened) {
-		f_open(&fil_obj, filename, FA_WRITE);
-		is_f_opened = true;
-	}
 	f_lseek(&fil_obj, f_bytes_wr);
 	f_puts(temp_str, &fil_obj);
 	f_bytes_wr += len;
-	if(close_f) {
-		f_close(&fil_obj);
-		is_f_opened = false;
-	}
 	free(temp_str);
 }
 

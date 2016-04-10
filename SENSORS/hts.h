@@ -66,4 +66,6 @@ void t_hts_dep_meas();
 void t_hts_prep_data();
 void t_hts_save_data();
 
+bool pre_hts_set_listed();
+
 #endif

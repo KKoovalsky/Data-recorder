@@ -15,6 +15,9 @@ uint8_t temp_meas_data[BMP_MEAS_REGS_NUM];
 double bmp_temp;
 double bmp_pres;
 
+/*	A variable defined to prevent multiple task listing	*/
+volatile bool bmp_is_meas_listed = false;
+
 void bmp_init() {
 	I2C_read_bytes(SLA_BMP_WR, BMP_COMP_PARAMS, BMP_COMP_REG_NUM, bmp_c_regs.comp_reg);
 }
@@ -101,6 +104,11 @@ void t_bmp_prep_data() {
 	add_task(t_bmp_save_data);
 }
 
+bool pre_bmp_set_listed() {
+	if(bmp_is_meas_listed) return false;
+	bmp_is_meas_listed = true;
+	return true;
+}
 
 void t_bmp_take_meas() {
 	/*	A variable defined to have under control buggy measurement preparing:
@@ -120,12 +128,13 @@ void t_bmp_take_meas() {
 		meas_not_rdy_cnt = 0;
 		add_task(t_bmp_dep_meas);
 		add_task(t_bmp_prep_data);
+		bmp_is_meas_listed = false;		
 	}
 }
 
 void t_bmp_save_data() {
-	SD_put_data_prog(PSTR("bmp_pres "), false);
-	SD_put_data(conv_meas_data(bmp_pres, pressure), false);
-	SD_put_data_prog(PSTR("bmp_temp "), false);
-	SD_put_data(conv_meas_data(bmp_temp, temperature), true);
+	SD_put_data_prog(PSTR("bmp_pres "));
+	SD_put_data(conv_meas_data(bmp_pres, pressure));
+	SD_put_data_prog(PSTR("bmp_temp "));
+	SD_put_data(conv_meas_data(bmp_temp, temperature));
 }

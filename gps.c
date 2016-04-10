@@ -71,6 +71,8 @@ ISR(USART0_RX_vect) {
 
 		data_ind = 0;
 		GGA_located = false;
+		
+		f_sync(&fil_obj);
 
 		add_task(t_add_file_endline);
 
@@ -177,7 +179,7 @@ void t_prep_gnss_data()
 
 void t_save_gnss_data() {
 	for(uint8_t i = 0; i < 5; i ++)
-		SD_put_data((char*)rdy_data[i], (i == 5 ? true : false));
+		SD_put_data((char*)rdy_data[i]);
 }
 
 

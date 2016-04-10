@@ -37,7 +37,6 @@ typedef struct asynch_task {
 /* Task list for normal tasks	*/
 typedef struct task_list {
 	task_t * first;
-	task_t * current;
 	task_t * last;
 }task_list_t;
 
@@ -72,8 +71,14 @@ inline asynch_task_t* asynch_task_constr(void(*e)(void), uint16_t t, bool i) {
 	return a;
 }
 
+//	Initialization of TCB
+void init();
+
 //	First create a task to add it to the list
 void add_task(void(*e)(void));
+
+//	Adding a task with a pre modifier
+void add_task_pre(bool(*pre)(void), void(*e)(void));
 
 //	Task to delete should be indicated by argument
 void delete_task(task_t* task);
@@ -86,7 +91,7 @@ void add_asynch_task(void(*e)(void), uint16_t time, bool importance);
 void asynch_app_timer_init();
 
 //	Always first task from the list deleted
-void delete_asynch_task();
+asynch_task_t * throw_asynch_task();
 
 
 #endif

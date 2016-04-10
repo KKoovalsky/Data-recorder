@@ -16,6 +16,8 @@ uint16_t H1_T0_out;
 int16_t T0_out;
 int16_t T1_out;
 
+volatile bool hts_is_meas_listed = false;
+
 void hts_comp_temp() {
 	int32_t var1, var2, var3;
 
@@ -91,8 +93,14 @@ void t_hts_prep_data() {
 	add_task(t_hts_save_data);
 }
 
+bool pre_hts_set_listed() {
+	if(hts_is_meas_listed) return false;
+	hts_is_meas_listed = true;
+	return true;
+}
+
 void t_hts_take_meas() {
-	/*	A variable defined to have under control buggy measurment preparing,
+	/*	A variable defined to have under control buggy measurement preparing:
 	 	when measurement was deputed, but no results can be get from sensor. */
 	static uint16_t meas_not_rdy_cnt = 0;
 	//	Attempting to get data for 500 miliseconds.
@@ -109,12 +117,13 @@ void t_hts_take_meas() {
 		meas_not_rdy_cnt = 0;
 		add_task(t_hts_dep_meas);
 		add_task(t_hts_prep_data);
+		hts_is_meas_listed = false;
 	}
 }
 
 void t_hts_save_data() {
-	SD_put_data_prog(PSTR("hts_hum "), false);
-	SD_put_data(conv_meas_data(hts_hum, humidity), false);
-	SD_put_data_prog(PSTR("hts_temp "), false);
-	SD_put_data(conv_meas_data(hts_temp, temperature), true);
+	SD_put_data_prog(PSTR("hts_hum "));
+	SD_put_data(conv_meas_data(hts_hum, humidity));
+	SD_put_data_prog(PSTR("hts_temp "));
+	SD_put_data(conv_meas_data(hts_temp, temperature));
 }

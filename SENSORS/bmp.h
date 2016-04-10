@@ -72,4 +72,6 @@ void t_bmp_dep_meas();
 void t_bmp_prep_data();
 void t_bmp_save_data();
 
+bool pre_bmp_set_listed();
+
 #endif

@@ -41,7 +41,6 @@ int main(void)
 	disk_status(STA_NOINIT);
 	f_mount(0, &FATFS_Obj);
 	f_open(&fil_obj, filename, FA_CREATE_ALWAYS | FA_WRITE );
-	f_close(&fil_obj);
 
 	//	Deputing measurement
 	t_mpl_dep_alt_meas();
@@ -54,13 +53,16 @@ int main(void)
 	//	Change Talker ID of GNSS module from GP to GN (multiple system servicing)
 	set_GN_TID();
 
-	//	Run the watchtimer to depute measurement if the GNSS data aren't earned
+	//	Run the watch timer to depute measurement if the GNSS data aren't earned
 	TIMSK1 |= (1<<OCIE1A);
 
 	//	Wait until sensors end a conversion
 	_delay_ms(258);
 
-	//	Asynch task handling initialization
+	// TCB initialization
+	init();
+
+	//	Asynchrounous task handling initialization
 	asynch_app_timer_init();
 
 	//	Setting sleep mode to minimize power consumption
@@ -68,13 +70,13 @@ int main(void)
 
 	//	Global permission on interrupts
 	sei();
-
+	
 	// Main loop
 	while(true) {
 		if(norm_task_list.first) {
 			norm_task_list.first->exec();
 			delete_task(norm_task_list.first);
-		} else {
+		} else {					
 			//	Turn on sleep mode. It can be possible if there will be Usart RX software handling. TODO!
 		}
 	}

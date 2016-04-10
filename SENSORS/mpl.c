@@ -13,6 +13,8 @@ double mpl_alt;
 double mpl_pres;
 double mpl_temp;
 
+volatile bool mpl_is_meas_listed;
+
 static inline void mpl_comp_temp() {
 	mpl_temp = ((double)mpl_temp_raw)/256.0;
 }
@@ -72,6 +74,12 @@ void t_mpl_take_p_t_meas() {
 		add_task(t_mpl_prep_p_t_data);
 		add_task(t_mpl_dep_alt_meas);
 	}
+}
+
+bool pre_mpl_set_listed() {
+	if(mpl_is_meas_listed) return false;
+	mpl_is_meas_listed = true;
+	return true;
 }
 
 void t_mpl_take_alt_meas() {
@@ -137,13 +145,13 @@ void t_mpl_prep_p_t_data() {
 }
 
 void t_mpl_save_p_t_data() {
-	SD_put_data_prog(PSTR("mpl_pres "), false);
-	SD_put_data(conv_meas_data(mpl_pres, pressure), false);
-	SD_put_data_prog(PSTR("mpl_temp "), false);
-	SD_put_data(conv_meas_data(mpl_temp, temperature), true);
+	SD_put_data_prog(PSTR("mpl_pres "));
+	SD_put_data(conv_meas_data(mpl_pres, pressure));
+	SD_put_data_prog(PSTR("mpl_temp "));
+	SD_put_data(conv_meas_data(mpl_temp, temperature));
 }
 
 void t_mpl_save_alt_data() {
-	SD_put_data_prog(PSTR("mpl_alt "), false);
-	SD_put_data(conv_meas_data(mpl_alt, altitude), true);
+	SD_put_data_prog(PSTR("mpl_alt "));
+	SD_put_data(conv_meas_data(mpl_alt, altitude));
 }

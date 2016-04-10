@@ -5,6 +5,10 @@ volatile uint16_t asynch_presc;
 volatile task_list_t norm_task_list;
 volatile asynch_task_list_t asynch_task_list;
 
+void init() {
+	norm_task_list.first = norm_task_list.last = NULL;
+	asynch_task_list.first = asynch_task_list.last = NULL;
+}
 
 void add_task(void(*e)(void)) {
 	task_t * task_new = norm_task_constr(e);
@@ -21,6 +25,11 @@ void add_task(void(*e)(void)) {
 	task_new->prev = norm_task_list.last;
 	task_new->next = NULL;
 	norm_task_list.last = task_new;
+}
+
+void add_task_pre(bool(*pre)(void), void(*e)(void)) {
+	//	Execute pre-procedure
+	if(pre()) add_task(e);
 }
 
 void delete_task(task_t* task) {
@@ -57,8 +66,18 @@ void asynch_app_timer_init() {
 	asynch_presc = 1024;
 }
 
-void add_asynch_task(void(*e)(void), uint16_t time, bool importance) {
 
+/*	This implementation should be in *.asm. E.g. Adding new asynchronous
+	task, which makes only incrementation, every millisecond in program, leads to
+	executing of only 780 tasks per second.								*/	  
+void add_asynch_task(void(*e)(void), uint16_t time, bool importance) {
+	
+	uint16_t TCNT_content;
+	//	Read and remember TCNT content firstly to ensure the most possible consistency
+	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+		TCNT_content = TCNT_U;
+	}
+	
 	asynch_task_t* task_new = asynch_task_constr(e, time, importance);
 
 	//	Empty asynchronous task list
@@ -69,18 +88,19 @@ void add_asynch_task(void(*e)(void), uint16_t time, bool importance) {
 		asynch_task_list.first = asynch_task_list.last = task_new;
 
 		task_new->next = NULL;
-
-		A_TCNT_CLR;
-		A_INT_EN;
+		
+		ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+			A_TCNT_CLR;
+			A_INT_EN;	
+		}
 
 		return;
 	}
 
-	uint16_t TCNT_content, OCR_content;
+	uint16_t OCR_content;
 	uint32_t time_to_next_int;
 	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
 
-		TCNT_content = TCNT_U;
 		OCR_content = OCRA_U;
 
 		time_to_next_int = (float)asynch_presc / (float)F_CPU *
@@ -131,33 +151,38 @@ void add_asynch_task(void(*e)(void), uint16_t time, bool importance) {
 	}
 }
 
-void delete_asynch_task() {
+asynch_task_t * throw_asynch_task() {
+	
+	asynch_task_t * temp_a_task;
+	
 	//	Just one element on the list
 	if(asynch_task_list.first == asynch_task_list.last) {
+		temp_a_task = asynch_task_list.first;
 		asynch_task_list.first = NULL;
-		free(asynch_task_list.last);
 		asynch_task_list.last = NULL;
-		return;
+		return temp_a_task;
 	}
 
-	asynch_task_t * task_temp = asynch_task_list.first;
-	asynch_task_list.first = task_temp->next;
-	free(task_temp);
+	temp_a_task = asynch_task_list.first;
+	asynch_task_list.first = temp_a_task->next;
+	return temp_a_task;
 }
 
 //	Implementation assuming that interrupt can't be interrupted
 ISR(TIMER3_COMPA_vect) {
 	
+	asynch_task_t * act_asynch_task = throw_asynch_task();
+	
 	//	If it is important to execute a task function just after the given time:
-	if(asynch_task_list.first->important) {
-		asynch_task_list.first->exec();
+	if(act_asynch_task->important) {
+		act_asynch_task->exec();
 	} else {
 		//	If it is important just to execute the task function after the given time:
-		add_task(asynch_task_list.first->exec);
+		add_task(act_asynch_task->exec);
 	}
 
 	//	Delete asynchronous task from the task list
-	delete_asynch_task();
+	free(act_asynch_task);
 
 	//	Initialization of next interrupt on asynchronous task
 	if(asynch_task_list.first) {
@@ -165,16 +190,18 @@ ISR(TIMER3_COMPA_vect) {
 		//	If there will be a situation, when two tasks should be executed at the same time
 		while(asynch_task_list.first->time == 0) {
 
+			asynch_task_t * act_asynch_task = throw_asynch_task();
+
 			//	If it is important to execute a task function just after the given time:
-			if(asynch_task_list.first->important) {
-				asynch_task_list.first->exec();
-			} else {
+			if(act_asynch_task->important) {
+				act_asynch_task->exec();
+				} else {
 				//	If it is important just to execute the task function after the given time:
-				add_task(asynch_task_list.first->exec);
+				add_task(act_asynch_task->exec);
 			}
 
 			//	Delete asynchronous task from the task list
-			delete_asynch_task();
+			free(act_asynch_task);
 
 			if(!asynch_task_list.first) {
 				A_INT_DIS;
@@ -182,8 +209,7 @@ ISR(TIMER3_COMPA_vect) {
 			}
 		}
 
-		OCRA_U = (float)F_CPU / (float)asynch_presc *
-				(float)asynch_task_list.first->time / 1000.0 + 0.5;
+		OCRA_U = (float)F_CPU / (float)asynch_presc * (float)asynch_task_list.first->time / 1000.0 + 0.5;
 		A_INT_EN;
 
 	} else {
