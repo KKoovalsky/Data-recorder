@@ -1,3 +1,4 @@
+/* Not universal string functions, bur faster for this purpose.	*/
 
 #ifndef X_STR_H_
 #define X_STR_H_
