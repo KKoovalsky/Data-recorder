@@ -100,6 +100,7 @@ void t_mpl_take_alt_meas() {
 		meas_not_rdy_cnt = 0;
 		add_task(t_mpl_dep_p_t_meas);
 		add_task(t_mpl_prep_alt_data);
+		mpl_is_meas_listed = false;
 	}
 }
 
