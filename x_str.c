@@ -39,6 +39,7 @@ void x_memmove(char * to, char * from, uint8_t bytes_wr) {
 		*to = temp[i];
 		to++;
 	}
+	free(temp);
 }
 
 char * x_strchr(char * where, char what) {

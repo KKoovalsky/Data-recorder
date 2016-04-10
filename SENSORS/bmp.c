@@ -133,8 +133,15 @@ void t_bmp_take_meas() {
 }
 
 void t_bmp_save_data() {
+	char * str;
+	
+	str = conv_meas_data(bmp_pres, pressure);
 	SD_put_data_prog(PSTR("bmp_pres "));
-	SD_put_data(conv_meas_data(bmp_pres, pressure));
+	SD_put_data(str);
+	free(str);
+	
+	str = conv_meas_data(bmp_temp, temperature);
 	SD_put_data_prog(PSTR("bmp_temp "));
-	SD_put_data(conv_meas_data(bmp_temp, temperature));
+	SD_put_data(str);
+	free(str);
 }

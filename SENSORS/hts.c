@@ -122,8 +122,15 @@ void t_hts_take_meas() {
 }
 
 void t_hts_save_data() {
+	char * str;
+	
+	str = conv_meas_data(hts_hum, humidity);
 	SD_put_data_prog(PSTR("hts_hum "));
-	SD_put_data(conv_meas_data(hts_hum, humidity));
+	SD_put_data(str);
+	free(str);
+	
+	str = conv_meas_data(hts_temp, temperature);
 	SD_put_data_prog(PSTR("hts_temp "));
-	SD_put_data(conv_meas_data(hts_temp, temperature));
+	SD_put_data(str);
+	free(str);
 }

@@ -146,13 +146,22 @@ void t_mpl_prep_p_t_data() {
 }
 
 void t_mpl_save_p_t_data() {
+	char *str;
+	
+	str = conv_meas_data(mpl_pres, pressure);
 	SD_put_data_prog(PSTR("mpl_pres "));
-	SD_put_data(conv_meas_data(mpl_pres, pressure));
+	SD_put_data(str);
+	free(str);
+	
 	SD_put_data_prog(PSTR("mpl_temp "));
-	SD_put_data(conv_meas_data(mpl_temp, temperature));
+	str = conv_meas_data(mpl_temp, temperature);
+	SD_put_data(str);
+	free(str);
 }
 
 void t_mpl_save_alt_data() {
+	char * str = conv_meas_data(mpl_alt, altitude); 
 	SD_put_data_prog(PSTR("mpl_alt "));
-	SD_put_data(conv_meas_data(mpl_alt, altitude));
+	SD_put_data(str);
+	free(str);
 }
