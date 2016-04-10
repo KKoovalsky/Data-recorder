@@ -19,7 +19,7 @@ volatile char *rdy_data[5] = {time, lat, longt, alt, alt_units};
 const char NMEA_GGA_option[] PROGMEM = "GNGGA";
 const uint8_t NMEA_GGA_strlen PROGMEM = 5;
 
-/*	Nr of commas which should be skipped after reading important data.
+/*	Nr of commas which should be skipped (don't care) after reading important data.
  	Each index corresponds to important data like ordered in GGA message. */
 const uint8_t comm_dc_after_imp[] PROGMEM = {0, 1, 4, 0, 0};
 
@@ -64,10 +64,12 @@ ISR(USART0_UDRE_vect) {
 ISR(USART0_RX_vect) {
 
 	char data;
-	data = UDR0;
+	data = UDR0;	
 
 	if(data_ind == 5) {
 		TCNT1 = 0;
+
+		LED_TOG;
 
 		data_ind = 0;
 		GGA_located = false;
@@ -78,9 +80,9 @@ ISR(USART0_RX_vect) {
 
 		add_task(t_prep_gnss_data);
 
-		add_task(t_bmp_take_meas);
-		add_task(t_hts_take_meas);
-		add_task(t_mpl_take_alt_meas);
+		add_task_pre(pre_bmp_set_listed, t_bmp_take_meas);
+		add_task_pre(pre_hts_set_listed, t_hts_take_meas);
+		add_task_pre(pre_mpl_set_listed, t_mpl_take_alt_meas);
 
 		return;
 	}
@@ -93,14 +95,14 @@ ISR(USART0_RX_vect) {
 	if(GGA_located) {
 		if((!NMEA_ind) && data == ',') {
 			x_sprinft_prog((char *)raw_data[data_ind], def_data[data_ind]);
-			commas_to_ignore = pgm_read_byte(comm_dc_after_imp[data_ind]);
+			commas_to_ignore = pgm_read_byte(&comm_dc_after_imp[data_ind]);
 			data_ind ++;
 			NMEA_ind = 0;
 			return;
 		}
 		if(data == ',') {
 			raw_data[data_ind][NMEA_ind] = '\0';
-			commas_to_ignore = pgm_read_byte(comm_dc_after_imp[data_ind]);
+			commas_to_ignore = pgm_read_byte(&comm_dc_after_imp[data_ind]);
 			data_ind ++;
 			NMEA_ind = 0;
 			return;
@@ -110,9 +112,9 @@ ISR(USART0_RX_vect) {
 		return;
 	}
 
-	if(data == pgm_read_byte(NMEA_GGA_option[NMEA_ind])) {
+	if(data == pgm_read_byte(&NMEA_GGA_option[NMEA_ind])) {
 		NMEA_ind++;
-		if(NMEA_ind == pgm_read_byte(NMEA_GGA_strlen)) {
+		if(NMEA_ind == pgm_read_byte(&NMEA_GGA_strlen)) {
 			commas_to_ignore = 1;
 			GGA_located = true;
 			NMEA_ind = 0;

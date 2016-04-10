@@ -95,16 +95,16 @@ void Timer0_init (void) {
 	TIMSK0 |= (1<<OCIE0A);				// Allow interrupt in CTC mode
 }
 
-/* Timer 1,1 Hz */
+/* Timer 0,8 Hz */
 void Timer1_init (void) {
 	/* 	Prescaler F_CPU/1024; CTC mode	*/
 	TCCR1B |= (1<<WGM12) | (1<<CS12) | (1<<CS10);
 
-	/*  21E9(16) = 8681(10)
-		8000000/1024/7102 = 0,9 Hz 
-		Interrupt after ~1,11s*/
-	OCR1AH = 0x21;
-	OCR1AL = 0xE9;
+	/*  2626(16) = 9766(10)
+		8000000/1024/9766 = 0,8 Hz 
+		Interrupt after 1,25s*/
+	OCR1AH = 0x26;
+	OCR1AL = 0x26;
 }
 
 void SPI_init() {
@@ -136,6 +136,8 @@ ISR(TIMER1_COMPA_vect) {
 	GGA_located = false;		
 	commas_to_ignore = 0;
 	
+	LED_TOG;
+	
 	f_sync(&fil_obj);
 
 	add_task(t_add_file_endline);
@@ -148,6 +150,5 @@ ISR(TIMER1_COMPA_vect) {
 
 void t_add_file_endline() {
 	SD_put_data_prog(PSTR("\n\r"));
-	LED_TOG;
 }
 
