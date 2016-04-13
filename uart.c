@@ -13,17 +13,17 @@ void Timer2_init() {
 	OCR2A = OCR_UART_CONTENT;			// 8000000/8/9600 = 104,1(6)
 }
 
-void PCINT_handler() {
+ISR(PCINT3_vect) {
 	//	Firstly read TCNT content to avoid inconsistency.
 	uint8_t TCNT_content = TCNT2;
 	
 	//	If TCNT content is almost equal OCR content it is understood, that next bit was received. 
 	cycles_not_int += (TCNT_content > NEXT_RX_BIT_GATE ? 1 : 0);
 	
-	//	When received logic one after start bit skip start bit from counting.
-	if(!bits_rec_cnt) {
-		cycles_not_int -=1;
-		byte_rec;
+	//	Start period count timer, when start bit's falling edge detected.
+	if(cycles_not_int == 0xFF) {
+		Timer2_start();
+		return;
 	}
 	
 	//	No negation needed, because logical one corresponds to GND voltage level (zero - VCC).
@@ -38,32 +38,26 @@ void PCINT_handler() {
 	if(bits_rec_cnt == UART_NUM_DATA_BITS) {
 		Timer2_stop();
 		bits_rec_cnt = 0;
-		//return data_byte
+		cycles_not_int = 0xFF; //	Initialized with '-1', to avoid interpreting start bit as data bit.
+		uart_byte_rec = byte_rec;
+		GENERATE_SOFT_INT;
 		return;
 	}
 	
-	//	Clear TCNT register and allow to TIMER2 overflow interrupt (no problem if was enabled).
-	Timer2_start();
+	//	Clear TCNT register.
+	TCNT2 = 0;
 }
 
-void TIMER2_OVF_handler() {
+ISR(TIMER2_COMPA_vect) {
 	//	1 bit period ended
 	cycles_not_int += 1;
 	
-	//	If only ones were received:
-	if(!bits_rec_cnt && cycles_not_int == UART_NUM_DATA_BITS + 1) {
+	//	When last bit logic zero.
+	if(bits_rec_cnt + cycles_not_int == UART_NUM_DATA_BITS && UART_RX_PIN_STATE) {
 		Timer2_stop();
-		//return 0xFF
-	}
-	
-	//	When last bit was one.
-	if(bits_rec_cnt + cycles_not_int == UART_NUM_DATA_BITS) {
-		for(uint8_t i = 0; i < cycles_not_int; i++)
-			byte_rec |= (1 << (UART_NUM_DATA_BITS - i - bits_rec_cnt - 1));
-		
-		Timer2_stop();
-		cycles_not_int = 0;
+		cycles_not_int = 0xFF;
 		bits_rec_cnt = 0;
-		//return data_byte;
+		uart_byte_rec = byte_rec;
+		GENERATE_SOFT_INT;
 	}
 }

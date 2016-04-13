@@ -26,6 +26,7 @@ int main(void)
 	//	Microcontroller modules initialization
 	Timer0_init();
 	Timer1_init();
+	Timer2_init();
 	SPI_init();
 	TWI_init();
 
@@ -47,8 +48,9 @@ int main(void)
 	t_hts_dep_meas();
 	t_bmp_dep_meas();
 
-	//	Initialize USART module (TX, RX)
+	//	Initialize USART module (TX, RX) and UART handling.
 	USART_init();
+	UART_init();
 
 	//	Change Talker ID of GNSS module from GP to GN (multiple system servicing)
 	set_GN_TID();

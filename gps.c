@@ -34,6 +34,8 @@ const char def_data_3[] PROGMEM = "00000.00000";
 const char def_data_4[] PROGMEM = "00.0";
 const char def_data_5[] PROGMEM = "M";
 const char * def_data[] = {def_data_1, def_data_2, def_data_3, def_data_4, def_data_5};
+	
+volatile uint8_t uart_byte_rec;
 
 //	21 bytes of command to change talker ID from GP (default) to GN
 const char GN_TID_comm[] PROGMEM = { 0xB5, 0x62, 0x06, 0x17, 0x0C, 0x00, 0x00, 0x23,
@@ -44,8 +46,8 @@ void USART_init() {
 	UBRR0H = BAUD_RATE_9600_H;
 	UBRR0L = BAUD_RATE_9600_L;
 
-	//	Activation of USART's RX and TX module. Allowing on byte received interrupt.
-	UCSR0B = (1<<RXEN0) | (1<<TXEN0) | (1<<RXCIE0);
+	//	Activation of USART's TX module. RX implemented by software.
+	UCSR0B = (1<<TXEN0);
 
 	//	1 stop bit, 8 bit in one baud, no parity control
 	UCSR0C = (3<<UCSZ00);
@@ -61,10 +63,11 @@ ISR(USART0_UDRE_vect) {
 	else UCSR0B &= ~(1<<UDRIE0);
 }
 
-ISR(USART0_RX_vect) {
+ISR(INT2_vect) {
 
 	char data;
-	data = UDR0;	
+	data = uart_byte_rec;
+	CLEAR_SOFT_INT_PIN;	
 
 	if(data_ind == 5) {
 		TCNT1 = 0;
