@@ -12,4 +12,4 @@ Digital sensors are separated from rest devices, because in further project phas
 which shouldn't be exhibited on external weather conditions, from those, which should.
 
 Above a scheme of this data recorder is presented:
-![alt tag](http://oi63.tinypic.com/1zyhsgm.jpg)
+![alt tag](http://oi64.tinypic.com/2wn76hg.jpg)
