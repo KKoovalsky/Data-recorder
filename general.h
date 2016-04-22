@@ -26,10 +26,12 @@
 
 #include "gps.h"
 #include "i2c.h"
+#include "uart.h"
 
 #include "SENSORS/hts.h"
 #include "SENSORS/mpl.h"
 #include "SENSORS/bmp.h"
+
 
 #define F_CPU 8000000UL
 

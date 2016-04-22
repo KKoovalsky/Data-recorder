@@ -22,10 +22,14 @@
 #define LATITUDE_LETTERS_NUM 14
 #define LONGTITUDE_LETTERS_NUM 15
 
+#define CLEAR_SOFT_INT_PIN (PORTB &= ~(1<<PB2))
+
 extern volatile uint8_t commas_to_ignore;
 extern volatile uint8_t NMEA_ind;
 extern volatile uint8_t data_ind;
 extern volatile bool GGA_located;
+
+extern volatile uint8_t uart_byte_rec;
 
 //	Setting talker id from GP to GN to allow positioning based on multiple systems.
 inline void set_GN_TID() {
