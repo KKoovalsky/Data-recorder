@@ -14,3 +14,5 @@ which shouldn't be exhibited on external weather conditions, from those, which s
 Above a scheme of this data recorder is presented:
 
 ![alt tag](http://oi64.tinypic.com/2wn76hg.jpg)
+
+File data90 shows sample output data taken in room.
