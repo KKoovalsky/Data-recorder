@@ -4,6 +4,9 @@
 //	Counter of received bits of the same value.
 volatile uint8_t cycles_not_int;
 
+//	Variable used to check packet send end.
+volatile uint8_t cycles_synch;
+
 volatile uint8_t bits_rec_cnt;
 volatile uint8_t byte_rec;
 
@@ -16,6 +19,9 @@ void Timer2_init() {
 ISR(PCINT3_vect) {
 	//	Firstly read TCNT content to avoid inconsistency.
 	uint8_t TCNT_content = TCNT2;
+	
+	//	To avoid resynchronization cycles_synch should be cleared.
+	cycles_synch = 0;
 	
 	//	If TCNT content is almost equal OCR content it is understood, that next bit was received. 
 	cycles_not_int += (TCNT_content > NEXT_RX_BIT_GATE ? 1 : 0);
@@ -40,6 +46,7 @@ ISR(PCINT3_vect) {
 		bits_rec_cnt = 0;
 		cycles_not_int = 0xFF; //	Initialized with '-1', to avoid interpreting start bit as data bit.
 		uart_byte_rec = byte_rec;
+		byte_rec = 0;
 		GENERATE_SOFT_INT;
 		return;
 	}
@@ -50,14 +57,25 @@ ISR(PCINT3_vect) {
 
 ISR(TIMER2_COMPA_vect) {
 	//	1 bit period ended
-	cycles_not_int += 1;
+	cycles_not_int ++;
+	cycles_synch++;
 	
-	//	When last bit logic zero.
+	//	If one or more edges won't be detected:
+	if(cycles_synch > 20) {
+		cycles_not_int = 0xFF;
+		bits_rec_cnt = 0;
+		cycles_synch = 0;
+		byte_rec = 0;
+		return;
+	}
+	
+	//	When last bit was logic zero.
 	if(bits_rec_cnt + cycles_not_int == UART_NUM_DATA_BITS && UART_RX_PIN_STATE) {
 		Timer2_stop();
 		cycles_not_int = 0xFF;
 		bits_rec_cnt = 0;
 		uart_byte_rec = byte_rec;
+		byte_rec = 0;
 		GENERATE_SOFT_INT;
 	}
 }

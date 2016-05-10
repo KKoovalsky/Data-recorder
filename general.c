@@ -141,7 +141,7 @@ ISR(TIMER1_COMPA_vect) {
 	f_sync(&fil_obj);
 
 	add_task(t_add_file_endline);
-
+	
 	add_task_pre(pre_bmp_set_listed, t_bmp_take_meas);
 	add_task_pre(pre_hts_set_listed, t_hts_take_meas);
 	add_task_pre(pre_mpl_set_listed, t_mpl_take_alt_meas);

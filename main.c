@@ -73,6 +73,8 @@ int main(void)
 	//	Global permission on interrupts
 	sei();
 	
+	add_task(t_test_wr_uart_init_data);
+	
 	// Main loop
 	while(true) {
 		if(norm_task_list.first) {

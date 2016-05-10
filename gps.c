@@ -67,12 +67,13 @@ ISR(INT2_vect) {
 
 	char data;
 	data = uart_byte_rec;
-	CLEAR_SOFT_INT_PIN;	
+	CLEAR_SOFT_INT_PIN;
+
+	//	Just for test
+	add_task(t_test_wr_rec_byte);
 
 	if(data_ind == 5) {
 		TCNT1 = 0;
-
-		LED_TOG;
 
 		data_ind = 0;
 		GGA_located = false;
@@ -121,6 +122,8 @@ ISR(INT2_vect) {
 			commas_to_ignore = 1;
 			GGA_located = true;
 			NMEA_ind = 0;
+			
+			LED_TOG;
 		}
 	}
 	else NMEA_ind = 0;

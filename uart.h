@@ -31,7 +31,8 @@ inline void Timer2_stop() {
 
 // RXD0 corresponds to PCINT24 pin, so any hardware change is needed.
 inline void UART_init() {
-	PORTD |= (1<<UART_RX_PIN);			//	PD0 - RXD0 - PCINT24 pin as input - VCC pull up.
+	DDRD &= ~(1<<UART_RX_PIN);
+	//PORTD |= (1<<UART_RX_PIN);			//	PD0 - RXD0 - PCINT24 pin as input - VCC pull up.
 	PCICR |= (1<<PCIE3);				//	Enable pin change interrupt on PCINT31:24 pins.
 	PCMSK3 |= (1<<PCINT24);				//	Enable pin change interrupt PCINT24 pin.
 	
