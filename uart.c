@@ -2,7 +2,7 @@
 #include "uart.h"
 
 //	Counter of received bits of the same value.
-volatile uint8_t cycles_not_int;
+volatile uint8_t cycles_not_int = 0xFF;
 
 //	Variable used to check packet send end.
 volatile uint8_t cycles_synch;
@@ -14,6 +14,7 @@ void Timer2_init() {
 	TCCR2A |= (1<<WGM21);				// CTC mode
 	TCCR2B |= (1<<CS21);				// Prescaler F_CPU/8
 	OCR2A = OCR_UART_CONTENT;			// 8000000/8/9600 = 104,1(6)
+	TCNT2 = 0;
 }
 
 ISR(PCINT3_vect) {
@@ -33,11 +34,12 @@ ISR(PCINT3_vect) {
 	}
 	
 	//	No negation needed, because logical one corresponds to GND voltage level (zero - VCC).
-	if(UART_RX_PIN_STATE) {
+	if(UART_RX_PIN_STATE) byte_rec |= ((1 << cycles_not_int) - 1) << bits_rec_cnt;
+		/*
 		for(uint8_t i = 0; i < cycles_not_int; i++)
-			byte_rec |= (1 << (UART_NUM_DATA_BITS - i - bits_rec_cnt - 1));
+			byte_rec |= (1 << (i + bits_rec_cnt));
 	}
-	
+	*/
 	bits_rec_cnt += cycles_not_int;
 	cycles_not_int = 0;
 	
@@ -58,10 +60,11 @@ ISR(PCINT3_vect) {
 ISR(TIMER2_COMPA_vect) {
 	//	1 bit period ended
 	cycles_not_int ++;
-	cycles_synch++;
+	cycles_synch ++;
 	
 	//	If one or more edges won't be detected:
 	if(cycles_synch > 20) {
+		Timer2_stop();
 		cycles_not_int = 0xFF;
 		bits_rec_cnt = 0;
 		cycles_synch = 0;
