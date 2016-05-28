@@ -28,8 +28,6 @@
 #include "i2c.h"
 #include "uart.h"
 
-#include "test.h"
-
 #include "SENSORS/hts.h"
 #include "SENSORS/mpl.h"
 #include "SENSORS/bmp.h"

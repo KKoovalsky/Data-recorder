@@ -62,7 +62,7 @@ void delete_task(task_t* task) {
 
 void asynch_app_timer_init() {
 	TCCR3B |= (1<<WGM32);				//	CTC mode
-	TCCR3B |= (1<<CS32) | (1<<CS30);	//	Prescaler 1024. Timer clock frequency 7812,5 MHz
+	TCCR3B |= (1<<CS32) | (1<<CS30);	//	Prescaler 1024. Timer clock frequency 7812,5 kHz
 	asynch_presc = 1024;
 }
 

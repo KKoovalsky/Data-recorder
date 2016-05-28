@@ -79,7 +79,7 @@ int main(void)
 			norm_task_list.first->exec();
 			delete_task(norm_task_list.first);
 		} else {					
-			//	Turn on sleep mode. It can be possible if there will be Usart RX software handling. TODO!
+			sleep_mode();
 		}
 	}
 

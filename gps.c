@@ -69,9 +69,6 @@ ISR(INT2_vect) {
 	data = uart_byte_rec;
 	CLEAR_SOFT_INT_PIN;
 
-	//	Just for test
-	add_task(t_test_wr_rec_byte);
-
 	if(data_ind == 5) {
 		TCNT1 = 0;
 
